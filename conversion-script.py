@@ -24,6 +24,7 @@ for dataset_name in ("webred_21", "webred_5"):
         for sentence_no, sentence in enumerate(webred_sentences):
             tsvfile.write(f"\n# doc {sentence_no}\n")
             relation_name = sentence.features.feature['relation_name'].bytes_list.value[0].decode('utf-8')
+            relation_name = relation_name.replace("'", "\\\'")
 
             sentence_str = sentence.features.feature['sentence'].bytes_list.value[0].decode('utf-8')
             temp_sent = ""
