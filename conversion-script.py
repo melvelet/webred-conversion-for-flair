@@ -25,11 +25,14 @@ for dataset_name in ("webred_21", "webred_5"):
             tsvfile.write(f"\n# doc {sentence_no}\n")
             relation_name = sentence.features.feature['relation_name'].bytes_list.value[0].decode('utf-8')
             relation_name = relation_name.replace("'", "\\\'")
-
+            source_name = sentence.features.feature['source_name'].bytes_list.value[0].decode('utf-8')
+            target_name = sentence.features.feature['target_name'].bytes_list.value[0].decode('utf-8')
             sentence_str = sentence.features.feature['sentence'].bytes_list.value[0].decode('utf-8')
+
             temp_sent = ""
-            if sentence_no in [67]:
-                print(sentence_str)
+            # if sentence_no in [67]:
+            #     print(sentence)
+            # print(sentence_str)
 
             for i in range(len(sentence_str)):
                 if sentence_str[i] == '.':
@@ -41,7 +44,7 @@ for dataset_name in ("webred_21", "webred_5"):
             sentence_str = temp_sent
             sentence_str = sentence_str.replace('* ', '').replace(',', ' ,').replace('?', ' ?') \
                 .replace('!', ' !').replace(':', ' :').replace(';', ' ;').replace('(', '( ').replace('[', '[ ') \
-                .replace(')', ' )').replace(']', ' ]') \
+                .replace(')', ' )').replace(']', ' ]').replace('}', '} ') \
                 .replace('  ', ' ')
             sentence_list = sentence_str.split()
 
@@ -50,26 +53,50 @@ for dataset_name in ("webred_21", "webred_5"):
             multi_token_entity = ""
             entity_list = []
             sentence_list_processed = []
+            current_entity = []
             for token_no, token in enumerate(sentence_list):
-                entity = multi_token_entity if multi_token_entity else 'O'
+                if multi_token_entity:
+                    entity = multi_token_entity
+                    current_entity.append(token)
+                else:
+                    entity = 'O'
+
                 if token.startswith('SUBJ{'):
                     entity = 'B-SUBJ'
+                    current_entity.append(token)
                     if not token.endswith('}'):
                         multi_token_entity = "I-SUBJ"
-                    subj_pos = token_no
                 elif token.startswith('OBJ{'):
                     entity = 'B-OBJ'
+                    current_entity.append(token)
                     if not token.endswith('}'):
                         multi_token_entity = "I-OBJ"
-                    obj_pos = token_no
 
                 if token.endswith('}'):
+                    current_entity_str = " ".join(current_entity).replace('OBJ{', '').replace('SUBJ{', '').replace('}', '')
+                    # print("source_name: '", source_name, "' target_name: '", target_name,
+                    #       "' current_entity_str: '", current_entity_str, ',',
+                    #       current_entity_str == source_name, current_entity_str == target_name)
+                    if current_entity_str == source_name:
+                        # if 'OBJ' not in entity:
+                        #     print('True')
+                        obj_pos = token_no
+                    elif current_entity_str == target_name:
+                        # if 'SUBJ' not in entity:
+                        #     print('True')
+                        subj_pos = token_no
                     multi_token_entity = None
+                    current_entity = []
 
                 token = token.replace('OBJ{', '').replace('SUBJ{', '').replace('}', '')
 
                 sentence_list_processed.append(token)
                 entity_list.append(entity)
+
+            if obj_pos == -1:
+                print(source_name, 'not found: ', sentence_str)
+            if subj_pos == -1:
+                print(target_name, 'not found', sentence_str)
 
             for i, val in enumerate(zip(sentence_list_processed, entity_list)):
                 token, entity = val[0], val[1]
@@ -77,8 +104,8 @@ for dataset_name in ("webred_21", "webred_5"):
                     i,
                     token,
                     entity,
-                    f"['{relation_name}']" if entity == "B-SUBJ" else "['N']",
-                    f"[{obj_pos}]" if entity == "B-SUBJ" else f"[{i}]"
+                    f"['{relation_name}']" if i == obj_pos else "['N']",
+                    f"[{subj_pos}]" if i == obj_pos else f"[{i}]"
                 ]
 
                 tsvwriter.writerow(row)
