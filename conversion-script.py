@@ -30,7 +30,7 @@ for dataset_name in ("webred_21", "webred_5"):
             sentence_str = sentence.features.feature['sentence'].bytes_list.value[0].decode('utf-8')
 
             temp_sent = ""
-            # if sentence_no in [67, 123]:
+            # if sentence_no in [40]:
             #     print(sentence)
             # print(sentence_str)
 
@@ -41,14 +41,14 @@ for dataset_name in ("webred_21", "webred_5"):
                 temp_sent += sentence_str[i]
 
             sentence_str = temp_sent
-            # if 'decreasing trend with increasing metallicity' in sentence_str:
+            # if 'Anglo-Egyptian conquest' in sentence_str and 'was a reconquest of territory' not in sentence_str:
             #     print(sentence)
             #     exit()
             sentence_str = sentence_str.replace('* ', '').replace(',', ' ,').replace('?', ' ?') \
                 .replace('!', ' !').replace(':', ' :').replace(';', ' ;').replace('(', '( ').replace('[', '[ ') \
                 .replace(')', ' )').replace(']', ' ]').replace('}', '} ').replace('/', ' / ') \
-                .replace('  ', ' ')
-            sentence_list = sentence_str.split()
+                .replace('OBJ{', ' OBJ{').replace('SUBJ{', ' SUBJ{')
+            sentence_list = [i for i in sentence_str.split() if i]  # split and remove empty tokens/ multiple spaces
 
             obj_pos = []
             multi_token_entity = ""
