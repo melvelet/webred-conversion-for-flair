@@ -41,9 +41,12 @@ for dataset_name in ("webred_21", "webred_5"):
                 temp_sent += sentence_str[i]
 
             sentence_str = temp_sent
+            # if 'decreasing trend with increasing metallicity' in sentence_str:
+            #     print(sentence)
+            #     exit()
             sentence_str = sentence_str.replace('* ', '').replace(',', ' ,').replace('?', ' ?') \
                 .replace('!', ' !').replace(':', ' :').replace(';', ' ;').replace('(', '( ').replace('[', '[ ') \
-                .replace(')', ' )').replace(']', ' ]').replace('}', '} ') \
+                .replace(')', ' )').replace(']', ' ]').replace('}', '} ').replace('/', ' / ') \
                 .replace('  ', ' ')
             sentence_list = sentence_str.split()
 
